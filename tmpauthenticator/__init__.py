@@ -22,7 +22,7 @@ class TmpAuthenticateHandler(BaseHandler):
     @gen.coroutine
     def get(self):
         raw_user = self.get_current_user()
-        if raw_user:
+        if self.force_new_server:
             if raw_user:
                 # Stop user's current server first
                 status = yield raw_user.spawner.poll()
