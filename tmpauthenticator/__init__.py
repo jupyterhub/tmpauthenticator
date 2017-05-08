@@ -23,21 +23,25 @@ class TmpAuthenticateHandler(BaseHandler):
     def get(self):
         raw_user = self.get_current_user()
         if raw_user:
-            # Stop user's current server first
-            status = yield raw_user.spawner.poll()
-            if status == None:
-                # Already running
-                yield raw_user.stop()
-                # Keep polling, with an exponential backoff
-                for i in range(8):
-                    status = yield raw_user.spawner.poll()
-                    if status is not None:
-                        break
-                    yield gen.sleep(0.2 * (2 ** i))
-                else:
-                    raise Exception("Pod for user %s could not be stopped", raw_user.name)
-                # HACK: Let's see if this works?
-                yield gen.sleep(5)
+            if raw_user:
+                # Stop user's current server first
+                status = yield raw_user.spawner.poll()
+                if status == None:
+                    # Already running
+                    yield raw_user.stop()
+                    # Keep polling, with an exponential backoff
+                    for i in range(8):
+                        status = yield raw_user.spawner.poll()
+                        if status is not None:
+                            break
+                        yield gen.sleep(0.2 * (2 ** i))
+                    else:
+                        raise Exception("Pod for user %s could not be stopped", raw_user.name)
+                    # FIXME: Is this explicitly needed?
+                    # Copied from HomeHandler, since this is what it
+                    # seems to do? Not sure why / if this is necessary,
+                    # but without this things seem to fail.
+                    yield raw_user.spawner.poll_and_notify()
 
 
         else:
