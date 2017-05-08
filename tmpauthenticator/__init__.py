@@ -21,12 +21,28 @@ class TmpAuthenticateHandler(BaseHandler):
 
     @gen.coroutine
     def get(self):
-        if self.force_new_server:
-            self.clear_login_cookie()
-        username = str(uuid.uuid4())
-        user_unprocessed = self.user_from_username(username)
-        user = yield gen.maybe_future(self.process_user(user_unprocessed, self))
-        self.set_login_cookie(user)
+        raw_user = self.get_current_user()
+        if raw_user:
+            # Stop user's current server first
+            status = yield raw_user.spawner.poll()
+            if status == None:
+                # Already running
+                yield raw_user.stop()
+                # Keep polling, with an exponential backoff
+                for i in range(8):
+                    status = yield raw_user.spawner.poll()
+                    if status is not None:
+                        break
+                    yield gen.sleep(0.2 * (2 ** i))
+                else:
+                    raise Exception("Pod for user %s could not be stopped", raw_user.name)
+
+
+        else:
+            username = str(uuid.uuid4())
+            raw_user = self.user_from_username(username)
+            self.set_login_cookie(raw_user)
+        user = yield gen.maybe_future(self.process_user(raw_user, self))
         self.redirect(url_path_join(
             self.hub.server.base_url,
             'spawn'
