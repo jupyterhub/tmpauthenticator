@@ -36,6 +36,8 @@ class TmpAuthenticateHandler(BaseHandler):
                     yield gen.sleep(0.2 * (2 ** i))
                 else:
                     raise Exception("Pod for user %s could not be stopped", raw_user.name)
+                # HACK: Let's see if this works?
+                yield gen.sleep(5)
 
 
         else:
