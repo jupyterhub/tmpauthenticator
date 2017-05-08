@@ -63,6 +63,10 @@ class TmpAuthenticator(Authenticator):
     page immediately logs the user in with a randomly generated UUID if they
     are already not logged in, and spawns a server for them.
     """
+
+    auto_login = True
+    login_service = 'tmp'
+
     force_new_server = Bool(
         False,
         help="""
