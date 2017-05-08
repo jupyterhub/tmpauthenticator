@@ -23,36 +23,18 @@ class TmpAuthenticateHandler(BaseHandler):
     def get(self):
         raw_user = self.get_current_user()
         if raw_user:
-            if raw_user:
-                # Stop user's current server first
-                status = yield raw_user.spawner.poll()
-                if status == None:
-                    # Already running
-                    yield raw_user.stop()
-                    # Keep polling, with an exponential backoff
-                    for i in range(8):
-                        status = yield raw_user.spawner.poll()
-                        if status is not None:
-                            break
-                        yield gen.sleep(0.2 * (2 ** i))
-                    else:
-                        raise Exception("Pod for user %s could not be stopped", raw_user.name)
-                    # FIXME: Is this explicitly needed?
-                    # Copied from HomeHandler, since this is what it
-                    # seems to do? Not sure why / if this is necessary,
-                    # but without this things seem to fail.
-                    yield raw_user.spawner.poll_and_notify()
-
-
+            if self.force_new_server and not raw_user.spawn_pending:
+                # Stop user's current server if it is running
+                # so we get a new one.
+                status = yield raw_user.spawner.poll_and_notify()
+                if status is None:
+                    yield self.stop_single_user(raw_user)
         else:
             username = str(uuid.uuid4())
             raw_user = self.user_from_username(username)
             self.set_login_cookie(raw_user)
         user = yield gen.maybe_future(self.process_user(raw_user, self))
-        self.redirect(url_path_join(
-            self.hub.server.base_url,
-            'spawn'
-        ))
+        self.redirect(user.url)
 
 
 class TmpAuthenticator(Authenticator):
@@ -70,10 +52,10 @@ class TmpAuthenticator(Authenticator):
     force_new_server = Bool(
         False,
         help="""
-        Automatically log out the user first before logging them in.
+        Stop the user's server and start a new one when visiting /hub/tmplogin
 
-        When set to True, users going to /hub/login will *always* get a
-        new single-user server. When set to False, they'll just be
+        When set to True, users going to /hub/tmplogin will *always* get a
+        new single-user server. When set to False, they'll be
         redirected to their current session if one exists.
         """,
         config=True
