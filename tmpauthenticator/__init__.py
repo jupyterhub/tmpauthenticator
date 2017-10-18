@@ -34,7 +34,7 @@ class TmpAuthenticateHandler(BaseHandler):
             raw_user = self.user_from_username(username)
             self.set_login_cookie(raw_user)
         user = yield gen.maybe_future(self.process_user(raw_user, self))
-        self.redirect(user.url)
+        self.redirect(self.get_argument("next", user.url))
 
 
 class TmpAuthenticator(Authenticator):
