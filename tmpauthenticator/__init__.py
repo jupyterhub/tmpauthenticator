@@ -21,7 +21,7 @@ class TmpAuthenticateHandler(BaseHandler):
 
     @gen.coroutine
     def get(self):
-        raw_user = self.get_current_user()
+        raw_user = yield self.get_current_user()
         if raw_user:
             if self.force_new_server and user.running:
                 # Stop user's current server if it is running
@@ -34,7 +34,7 @@ class TmpAuthenticateHandler(BaseHandler):
             raw_user = self.user_from_username(username)
             self.set_login_cookie(raw_user)
         user = yield gen.maybe_future(self.process_user(raw_user, self))
-        self.redirect(self.get_argument("next", user.url))
+        self.redirect(self.get_next_url(user))
 
 
 class TmpAuthenticator(Authenticator):
