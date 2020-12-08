@@ -14,28 +14,31 @@ class TmpAuthenticateHandler(BaseHandler):
 
     Creates a new user with a random UUID, and auto starts their server
     """
-    def initialize(self, force_new_server, process_user):
+    def initialize(self, process_user):
         super().initialize()
-        self.force_new_server = force_new_server
         self.process_user = process_user
 
-    @gen.coroutine
-    def get(self):
-        raw_user = yield self.get_current_user()
-        if raw_user:
-            if self.force_new_server and user.running:
-                # Stop user's current server if it is running
-                # so we get a new one.
-                status = yield raw_user.spawner.poll_and_notify()
-                if status is None:
-                    yield self.stop_single_user(raw_user)
-        else:
-            username = str(uuid.uuid4())
-            raw_user = self.user_from_username(username)
-            self.set_login_cookie(raw_user)
-        user = yield gen.maybe_future(self.process_user(raw_user, self))
-        self.redirect(self.get_next_url(user))
+    async def get(self):
+        """
+        Authenticate as a new user.
 
+        Each time /tmplogin is hit, we want to create a brand new user. This lets
+        users hit the hub URL, and immediately get a new server - regardless of wether
+        they had already logged in or not. So /tmplogin really acts as a logout +
+        login mechanism. This only happens when /tmplogin is hit - so you can use
+        other parts of the hub as you normally would.
+        """
+        username = str(uuid.uuid4())
+        user = self.user_from_username(username)
+        user = await gen.maybe_future(self.process_user(user, self))
+        self.set_login_cookie(user)
+
+        # This sets a hub login cookie for the new user, overwriting old user's cookies if needed
+        self.set_hub_cookie(user)
+
+        next_url = self.get_next_url(user)
+
+        self.redirect(next_url)
 
 class TmpAuthenticator(Authenticator):
     """
@@ -48,18 +51,6 @@ class TmpAuthenticator(Authenticator):
 
     auto_login = True
     login_service = 'tmp'
-
-    force_new_server = Bool(
-        False,
-        help="""
-        Stop the user's server and start a new one when visiting /hub/tmplogin
-
-        When set to True, users going to /hub/tmplogin will *always* get a
-        new single-user server. When set to False, they'll be
-        redirected to their current session if one exists.
-        """,
-        config=True
-    )
 
     def process_user(self, user, handler):
         """
@@ -78,7 +69,6 @@ class TmpAuthenticator(Authenticator):
     def get_handlers(self, app):
         # FIXME: How to do this better?
         extra_settings = {
-            'force_new_server': self.force_new_server,
             'process_user': self.process_user
         }
         return [
