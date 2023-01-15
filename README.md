@@ -5,7 +5,7 @@ that gives anyone who visits the home page a user account without having to
 log in using any UI at all. It also spawns a single-user server and directs
 the user to it immediately, without them having to press a button.
 
-Built primarily to help run [tmpnb](https://tmpnb.org) with JupyterHub.
+Built primarily to help run tmpnb with JupyterHub.
 
 ## Installation ##
 
