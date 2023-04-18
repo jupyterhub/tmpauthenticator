@@ -23,7 +23,7 @@ class TmpAuthenticateHandler(BaseHandler):
     def get(self):
         raw_user = yield self.get_current_user()
         if raw_user:
-            if self.force_new_server and user.running:
+            if self.force_new_server and raw_user.running:
                 # Stop user's current server if it is running
                 # so we get a new one.
                 status = yield raw_user.spawner.poll_and_notify()
