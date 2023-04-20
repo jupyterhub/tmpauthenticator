@@ -9,4 +9,15 @@ setup(
     author_email='yuvipanda@gmail.com',
     license='3 Clause BSD',
     packages=find_packages(),
+    python_requires=">=3.7",
+    install_require={
+        "jupyterhub>=1.3.0",
+    },
+    extras_require={
+        "test": [
+            "pytest",
+            "pytest-asyncio",
+            "pytest-cov",
+        ],
+    },
 )
