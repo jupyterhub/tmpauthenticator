@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name='jupyterhub-tmpauthenticator',
@@ -8,5 +8,5 @@ setup(
     author='Yuvi Panda',
     author_email='yuvipanda@gmail.com',
     license='3 Clause BSD',
-    packages=find_packages()
+    packages=find_packages(),
 )
