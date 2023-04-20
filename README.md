@@ -1,4 +1,4 @@
-# Temporary JupyterHub Authenticator #
+# Temporary JupyterHub Authenticator
 
 Simple authenticator for [JupyterHub](http://github.com/jupyter/jupyterhub/)
 that gives anyone who visits the home page a user account without having to
@@ -7,7 +7,7 @@ the user to it immediately, without them having to press a button.
 
 Built primarily to help run [tmpnb](https://github.com/jupyter/tmpnb) with JupyterHub.
 
-## Installation ##
+## Installation
 
 ```
 pip install jupyterhub-tmpauthenticator

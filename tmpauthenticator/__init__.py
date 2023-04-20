@@ -1,11 +1,9 @@
 import uuid
 
-from traitlets import Bool
-from tornado import gen
-
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
+from tornado import gen
 
 
 class TmpAuthenticateHandler(BaseHandler):
@@ -14,6 +12,7 @@ class TmpAuthenticateHandler(BaseHandler):
 
     Creates a new user with a random UUID, and auto starts their server
     """
+
     def initialize(self, process_user):
         super().initialize()
         self.process_user = process_user
@@ -39,6 +38,7 @@ class TmpAuthenticateHandler(BaseHandler):
         next_url = self.get_next_url(user)
 
         self.redirect(next_url)
+
 
 class TmpAuthenticator(Authenticator):
     """
@@ -68,12 +68,8 @@ class TmpAuthenticator(Authenticator):
 
     def get_handlers(self, app):
         # FIXME: How to do this better?
-        extra_settings = {
-            'process_user': self.process_user
-        }
-        return [
-            ('/tmplogin', TmpAuthenticateHandler, extra_settings)
-        ]
+        extra_settings = {'process_user': self.process_user}
+        return [('/tmplogin', TmpAuthenticateHandler, extra_settings)]
 
     def login_url(self, base_url):
         return url_path_join(base_url, 'tmplogin')
