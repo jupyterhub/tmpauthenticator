@@ -1,6 +1,5 @@
 import uuid
 
-from traitlets import Bool
 from tornado import gen
 
 from jupyterhub.auth import Authenticator
