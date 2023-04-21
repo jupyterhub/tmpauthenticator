@@ -18,6 +18,6 @@ Should install it. It has no additional dependencies beyond JupyterHub.
 You can then use this as your authenticator by adding the following line to
 your `jupyterhub_config.py`:
 
-```
-c.JupyterHub.authenticator_class = tmpauthenticator.TmpAuthenticator
+```python
+c.JupyterHub.authenticator_class = "tmp"
 ```
