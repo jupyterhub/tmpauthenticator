@@ -1,8 +1,9 @@
+import inspect
 import uuid
 
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
-from jupyterhub.utils import maybe_future, url_path_join
+from jupyterhub.utils import url_path_join
 
 
 class TmpAuthenticateHandler(BaseHandler):
@@ -38,7 +39,9 @@ class TmpAuthenticateHandler(BaseHandler):
         # Let a subclasses of TmpAuthenticator process the new user by
         # overriding TmpAuthenticator.process_user.
         #
-        user = await maybe_future(self.process_user(user, self))
+        user = self.process_user(user, self)
+        if inspect.isawaitable(user):
+            user = await user
 
         # Set or overwrite the login cookie to recognize the new user.
         #
