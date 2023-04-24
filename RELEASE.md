@@ -30,14 +30,11 @@ These are the instructions on how to make a release.
    pip install tbump
    ```
 
+   `tbump` will ask for confirmation before doing anything.
+
    ```shell
    # Example versions to set: 1.0.0, 1.0.0b1
    VERSION=
-
-   tbump --dry-run ${VERSION}
-   ```
-
-   ```shell
    tbump ${VERSION}
    ```
 
@@ -48,11 +45,6 @@ These are the instructions on how to make a release.
    ```shell
    # Example version to set: 1.0.1.dev
    NEXT_VERSION=
-
-   tbump --dry-run --no-tag ${NEXT_VERSION}.dev
-   ```
-
-   ```shell
    tbump --no-tag ${NEXT_VERSION}.dev
    ```
 
