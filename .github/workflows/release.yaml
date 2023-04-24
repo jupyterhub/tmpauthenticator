@@ -24,6 +24,14 @@ on:
 jobs:
   build-release:
     runs-on: ubuntu-22.04
+    permissions:
+      # id-token=write is required for pypa/gh-action-pypi-publish, and the PyPI
+      # project needs to be configured to trust this workflow.
+      #
+      # ref: https://github.com/jupyterhub/team-compass/issues/648
+      #
+      id-token: write
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -42,16 +50,5 @@ jobs:
           ls -l dist
 
       - name: publish to pypi
-        uses: pypa/gh-action-pypi-publish@v1.8.5
+        uses: pypa/gh-action-pypi-publish@release/v1
         if: startsWith(github.ref, 'refs/tags/')
-        with:
-          user: __token__
-          # pypi_password is be a PyPI deployment token for this repo with write
-          # permissions, created by the PyPI account jupyterhub-bot that is a
-          # maintainer for the PyPI project.
-          #
-          # ref: https://github.com/jupyterhub/team-compass/issues/520
-          # ref: https://pypi.org/project/jupyterhub-tmpauthenticator
-          # ref: https://github.com/jupyterhub/tmpauthenticator/settings/secrets/actions.
-          #
-          password: ${{ secrets.pypi_password }}
