@@ -8,6 +8,9 @@ setup(
     author='Yuvi Panda',
     author_email='yuvipanda@gmail.com',
     license='3 Clause BSD',
+    install_requires=[
+        'jupyterhub',
+    ],
     entry_points={
         # Thanks to this, user are able to do:
         #
