@@ -7,7 +7,6 @@ Welcome! As a [Jupyter](https://jupyter.org) project, we follow the [Jupyter con
 We ship a `jupyterhub_config.py` file that helps you test `tmpauthenticator`
 locally.
 
-
 1.  Clone this repository
 
     ```sh
