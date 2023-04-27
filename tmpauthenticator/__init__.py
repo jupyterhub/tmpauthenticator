@@ -71,8 +71,13 @@ class TmpAuthenticator(Authenticator):
     already not logged in, and spawns a server for them.
     """
 
+    # Default to automatically logging in the user when they hit the hub's
+    # home page, without requiring them to click a 'login' button. Can be
+    # overriden in config if you want to explicitly show the home page.
     auto_login = True
-    login_service = 'tmp'
+
+    # Text to be shown with the 'Sign in with...' button, when auto_login is False
+    login_service = 'Automatic Temporary Credentials'
 
     def process_user(self, user, handler):
         """
