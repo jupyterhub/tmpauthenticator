@@ -4,6 +4,7 @@ import uuid
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
+from traitlets import default
 
 
 class TmpAuthenticateHandler(BaseHandler):
@@ -71,10 +72,20 @@ class TmpAuthenticator(Authenticator):
     already not logged in, and spawns a server for them.
     """
 
-    # Default to automatically logging in the user when they hit the hub's
-    # home page, without requiring them to click a 'login' button. Can be
-    # overriden in config if you want to explicitly show the home page.
-    auto_login = True
+    @default("auto_login")
+    def _auto_login_default(self):
+        """
+        The Authenticator base class' config auto_login defaults to False, but
+        we change that default to True in TmpAuthenticator. This makes users
+        automatically get logged in when they hit the hub's home page, without
+        requiring them to click a 'login' button.
+
+        JupyterHub admins can still opt back to present the /hub/login page with
+        the login button like this:
+
+            c.TmpAuthenticator.auto_login = False
+        """
+        return True
 
     # Text to be shown with the 'Sign in with...' button, when auto_login is False
     login_service = 'Automatic Temporary Credentials'
