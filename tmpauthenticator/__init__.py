@@ -4,7 +4,7 @@ import uuid
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
-from traitlets import default
+from traitlets import Unicode, default
 
 
 class TmpAuthenticateHandler(BaseHandler):
@@ -87,8 +87,19 @@ class TmpAuthenticator(Authenticator):
         """
         return True
 
-    # Text to be shown with the 'Sign in with...' button, when auto_login is False
-    login_service = 'Automatic Temporary Credentials'
+    login_service = Unicode(
+        "Automatic Temporary Credentials",
+        help="""
+        Text to be shown with the 'Sign in with ...' button, when auto_login is
+        False.
+
+        The Authenticator base class' login_service isn't tagged as a
+        configurable traitlet, so we redefine it to allow it to be configurable
+        like this:
+
+            c.TmpAuthenticator.login_service = "your inherent worth as a human being"
+        """,
+    ).tag(config=True)
 
     def process_user(self, user, handler):
         """
