@@ -9,7 +9,7 @@ from traitlets import Unicode, default
 
 class TmpAuthenticateHandler(BaseHandler):
     """
-    Handler for /tmplogin
+    Handler for /tmplogin which is registered by TmpAuthenticator.
 
     Creates a new user with a random UUID as username and ensures cookies are
     updated to let JupyterHub recognize future requests as coming from the newly
@@ -116,9 +116,22 @@ class TmpAuthenticator(Authenticator):
         return user
 
     def get_handlers(self, app):
+        """
+        Registers a dedicated endpoint and web request handler for logging in
+        with tmpauthenticator. This is needed as /hub/login is reserved for
+        redirecting to whats returned by login_url.
+
+        ref: https://github.com/jupyterhub/jupyterhub/pull/1066
+        """
         # FIXME: How to do this better?
         extra_settings = {'process_user': self.process_user}
         return [('/tmplogin', TmpAuthenticateHandler, extra_settings)]
 
     def login_url(self, base_url):
+        """
+        login_url is overridden as intended for Authenticator subclasses by
+        jupyterhub to redirected users to it when they visit /hub/login.
+
+        ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/auth.py#L708-L723
+        """
         return url_path_join(base_url, 'tmplogin')
