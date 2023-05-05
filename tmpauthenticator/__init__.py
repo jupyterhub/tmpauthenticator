@@ -25,12 +25,20 @@ class TmpAuthenticateHandler(BaseHandler):
         login mechanism. This only happens when /tmplogin is hit - so you can use
         other parts of the hub as you normally would.
         """
-        # Create a new user.
-        #
-        # user_from_username ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L504-L505
-        #
         username = str(uuid.uuid4())
-        user = self.user_from_username(username)
+
+        # Run post_auth_hook
+        #
+        # Authenticator.run_post_auth_hook ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/auth.py#L400-L418
+        #
+        authenticated = {"name": username}
+        authenticated = await self.authenticator.run_post_auth_hook(self, authenticated)
+
+        # Create a new user
+        #
+        # BaseHandler.auth_to_user ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L774-L821
+        #
+        user = await self.auth_to_user(authenticated)
 
         # Set or overwrite the login cookie to recognize the new user.
         #
@@ -39,15 +47,15 @@ class TmpAuthenticateHandler(BaseHandler):
         # pre-existing login cookie. Due to that, we unconditionally call
         # self.set_hub_cookie(user) here.
         #
-        # set_login_cookie ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L627-L628
-        # set_hub_cookie ref:   https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L623-L625
+        # BaseHandler.set_login_cookie ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L627-L628
+        # BaseHandler.set_hub_cookie ref:   https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L623-L625
         #
         self.set_login_cookie(user)
         self.set_hub_cookie(user)
 
         # Login complete, redirect the user.
         #
-        # get_next_url ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L646-L653
+        # BaseHandler.get_next_url ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L646-L653
         #
         next_url = self.get_next_url(user)
         self.redirect(next_url)
