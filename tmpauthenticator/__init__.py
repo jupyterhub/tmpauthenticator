@@ -1,4 +1,3 @@
-import inspect
 import uuid
 
 from jupyterhub.auth import Authenticator
@@ -16,10 +15,6 @@ class TmpAuthenticateHandler(BaseHandler):
     created user.
     """
 
-    def initialize(self, process_user):
-        super().initialize()
-        self.process_user = process_user
-
     async def get(self):
         """
         Authenticate as a new user.
@@ -36,13 +31,6 @@ class TmpAuthenticateHandler(BaseHandler):
         #
         username = str(uuid.uuid4())
         user = self.user_from_username(username)
-
-        # Let a subclasses of TmpAuthenticator process the new user by
-        # overriding TmpAuthenticator.process_user.
-        #
-        user = self.process_user(user, self)
-        if inspect.isawaitable(user):
-            user = await user
 
         # Set or overwrite the login cookie to recognize the new user.
         #
@@ -101,20 +89,6 @@ class TmpAuthenticator(Authenticator):
         """,
     ).tag(config=True)
 
-    def process_user(self, user, handler):
-        """
-        Do additional arbitrary things to the created user before spawn.
-
-        user is a user object, and handler is a TmpAuthenticateHandler object
-
-        Should return the new user object.
-
-        This method can be a coroutine.
-
-        Note: This is primarily for overriding in subclasses
-        """
-        return user
-
     def get_handlers(self, app):
         """
         Registers a dedicated endpoint and web request handler for logging in
@@ -123,9 +97,7 @@ class TmpAuthenticator(Authenticator):
 
         ref: https://github.com/jupyterhub/jupyterhub/pull/1066
         """
-        # FIXME: How to do this better?
-        extra_settings = {'process_user': self.process_user}
-        return [('/tmplogin', TmpAuthenticateHandler, extra_settings)]
+        return [("/tmplogin", TmpAuthenticateHandler)]
 
     def login_url(self, base_url):
         """
