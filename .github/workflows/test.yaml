@@ -32,9 +32,9 @@ jobs:
         include:
           # oldest supported python and jupyterhub version
           - python-version: "3.8"
-            pip-install-spec: "jupyterhub==2.0.0"
+            pip-install-spec: "jupyterhub==2.0.0 sqlalchemy==1.*"
           - python-version: "3.9"
-            pip-install-spec: "jupyterhub==2.*"
+            pip-install-spec: "jupyterhub==2.* sqlalchemy==1.*"
           - python-version: "3.10"
             pip-install-spec: "jupyterhub==3.*"
           - python-version: "3.11"
