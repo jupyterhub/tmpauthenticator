@@ -22,7 +22,7 @@ setup(
     packages=find_packages(),
     python_requires=">=3.8",
     install_require={
-        "jupyterhub>=2.0.0",
+        "jupyterhub>=2.3.0",
         "traitlets",
     },
     extras_require={
