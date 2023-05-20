@@ -1,7 +1,6 @@
 import aiohttp
 import pytest
 from traitlets.config import Config
-from yarl import URL
 
 # pytest-jupyterhub provides a pytest-plugin, and from it we get various
 # fixtures, where we make use of hub_app that builds on MockHub, which defaults
@@ -14,6 +13,7 @@ pytest_plugins = [
     "jupyterhub-spawners-plugin",
 ]
 
+
 @pytest.fixture
 async def hub_config():
     """
@@ -21,7 +21,13 @@ async def hub_config():
     """
     config = Config()
     config.JupyterHub.authenticator_class = "tmp"
+
+    # yarl or aiohttp used in tests doesn't handle escaped URLs correctly, so
+    # the MockHub prefix of "/@/space%20word/" must be updated to workaround it.
+    config.JupyterHub.base_url = "/prefix/"
+
     return config
+
 
 @pytest.fixture
 async def browser_session():
