@@ -1,11 +1,36 @@
-"""
-Test ideas:
-
-- Validate that TmpAuthenticateHandler.get() creates a new user and updates the
-  login cookie even if it was already set.
-"""
 import pytest
 from yarl import URL
+
+
+async def _get_username(browser_session, app_url):
+    """
+    Visits /hub/home to get an _xsrf token set to cookies, that we can then
+    pass as a X-XSRFToken header when accessing /hub/api, then the function
+    visit /hub/api/user to get the username as recognized by JupyterHub
+    based on cookies passed.
+    """
+    hub_url = str(app_url / "hub/")
+    home_url = str(app_url / "hub/home")
+    api_user_url = str(app_url / "hub/api/user")
+
+    r = await browser_session.get(home_url)
+    assert r.status == 200
+
+    hub_cookies = browser_session.cookie_jar.filter_cookies(home_url)
+    if "_xsrf" in hub_cookies:
+        _xsrf = hub_cookies["_xsrf"].value
+    else:
+        _xsrf = ""
+    headers = {
+        "X-XSRFToken": _xsrf,  # required for jupyterhub>=4
+        "Referer": hub_url,  # required for jupyterhub<4
+        "Accept": "application/json",
+    }
+
+    r = await browser_session.get(api_user_url, headers=headers)
+    assert r.status == 200
+    user_api_response = await r.json()
+    return user_api_response["name"]
 
 
 @pytest.mark.parametrize(
@@ -51,7 +76,7 @@ async def test_login(
     browser_session,
 ):
     """
-    Tests that the user is redirected and finally authorized for /hub/home
+    Tests that the user is redirected and finally authorized for /hub/home.
     """
     app = await hub_app(hub_config)
     app_port = URL(app.bind_url).port
@@ -98,3 +123,37 @@ async def test_post_auth_hook_config(
     r = await browser_session.get(admin_url)
 
     assert r.status == test_status
+
+
+async def test_revisit_tmplogin(
+    hub_app,
+    hub_config,
+    browser_session,
+):
+    """
+    Tests that we get a new user if visiting /hub/tmplogin, even if we already
+    were authenticated as one as recognized by cookies.
+
+    This is done by first visiting /hub/home which should get us logged in and
+    inspecting the user via a cookie, and then /hub/tmplogin to again inspect
+    the user via a cookie.
+    """
+    app = await hub_app(hub_config)
+    app_port = URL(app.bind_url).port
+    app_url = URL(f"http://localhost:{app_port}{app.base_url}")
+
+    # first access, so we receive a new user
+    first_username = await _get_username(browser_session, app_url)
+    assert first_username
+
+    # when we visit /hub/home again, we are recognized and that doesn't make us
+    # arrive at /hub/login -> /hub/tmplogin, and therefore we shouldn't get a
+    # new user
+    assert first_username == await _get_username(browser_session, app_url)
+
+    # we visit /hub/tmplogin and should get a _new_ user
+    tmplogin_url = str(app_url / "hub/tmplogin")
+    r = await browser_session.get(tmplogin_url)
+    assert r.status == 200
+    second_username = await _get_username(browser_session, app_url)
+    assert first_username != second_username
