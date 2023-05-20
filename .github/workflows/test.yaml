@@ -7,11 +7,13 @@ on:
   pull_request:
     paths-ignore:
       - "docs/**"
+      - "**.md"
       - ".github/workflows/*.yaml"
       - "!.github/workflows/test.yaml"
   push:
     paths-ignore:
       - "docs/**"
+      - "**.md"
       - ".github/workflows/*.yaml"
       - "!.github/workflows/test.yaml"
     branches-ignore:
@@ -60,6 +62,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest --cov=jupyterhub-tmpauthenticator
+          pytest --cov=tmpauthenticator
 
+      # GitHub action reference: https://github.com/codecov/codecov-action
       - uses: codecov/codecov-action@v3
