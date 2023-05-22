@@ -5,8 +5,8 @@ setup(
     version='1.0.0.dev',
     description='JupyterHub authenticator that hands out temporary accounts for everyone',
     url='https://github.com/jupyterhub/tmpauthenticator',
-    author='Yuvi Panda',
-    author_email='yuvipanda@gmail.com',
+    author="Project Jupyter Contributors",  # founded by Yuvi Panda
+    author_email="jupyter@googlegroups.com",
     license='3 Clause BSD',
     entry_points={
         # Thanks to this, user are able to do:
