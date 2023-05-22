@@ -1,5 +1,8 @@
 from setuptools import find_packages, setup
 
+with open("README.md", encoding="utf8") as f:
+    readme = f.read()
+
 setup(
     name='jupyterhub-tmpauthenticator',
     version='1.0.0',
@@ -8,6 +11,8 @@ setup(
     author="Project Jupyter Contributors",  # founded by Yuvi Panda
     author_email="jupyter@googlegroups.com",
     license='3 Clause BSD',
+    long_description=readme,
+    long_description_content_type='text/markdown',
     entry_points={
         # Thanks to this, user are able to do:
         #
