@@ -4,15 +4,15 @@ with open("README.md", encoding="utf8") as f:
     readme = f.read()
 
 setup(
-    name='jupyterhub-tmpauthenticator',
-    version='1.0.0',
-    description='JupyterHub authenticator that hands out temporary accounts for everyone',
-    url='https://github.com/jupyterhub/tmpauthenticator',
+    name="jupyterhub-tmpauthenticator",
+    version="1.0.0",
+    description="JupyterHub authenticator that hands out temporary accounts for everyone",
+    url="https://github.com/jupyterhub/tmpauthenticator",
     author="Project Jupyter Contributors",  # founded by Yuvi Panda
     author_email="jupyter@googlegroups.com",
-    license='3 Clause BSD',
+    license="3 Clause BSD",
     long_description=readme,
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
     entry_points={
         # Thanks to this, user are able to do:
         #
@@ -20,8 +20,8 @@ setup(
         #
         # ref: https://jupyterhub.readthedocs.io/en/4.0.0/reference/authenticators.html#registering-custom-authenticators-via-entry-points
         #
-        'jupyterhub.authenticators': [
-            'tmp = tmpauthenticator:TmpAuthenticator',
+        "jupyterhub.authenticators": [
+            "tmp = tmpauthenticator:TmpAuthenticator",
         ],
     },
     packages=find_packages(),
