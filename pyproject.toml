@@ -64,7 +64,7 @@ regex = '''
 
 [tool.tbump.git]
 message_template = "Bump to {new_version}"
-tag_template = "{new_version}"
+tag_template = "v{new_version}"
 
 [[tool.tbump.file]]
 src = "setup.py"
