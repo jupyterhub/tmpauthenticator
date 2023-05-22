@@ -20,15 +20,18 @@ setup(
         ],
     },
     packages=find_packages(),
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     install_require={
-        "jupyterhub>=1.3.0",
+        "jupyterhub>=2.3.0",
+        "traitlets",
     },
     extras_require={
         "test": [
+            "aiohttp",
             "pytest",
             "pytest-asyncio",
             "pytest-cov",
+            "pytest-jupyterhub",
         ],
     },
 )
