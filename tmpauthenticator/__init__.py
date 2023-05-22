@@ -1,4 +1,3 @@
-import inspect
 import uuid
 
 from jupyterhub.auth import Authenticator
@@ -9,57 +8,52 @@ from traitlets import Unicode, default
 
 class TmpAuthenticateHandler(BaseHandler):
     """
-    Handler for /tmplogin which is registered by TmpAuthenticator.
+    Provides a GET web request handler for /hub/tmplogin, as registered by
+    TmpAuthenticator's override of Authenticator.get_handlers.
 
-    Creates a new user with a random UUID as username and ensures cookies are
-    updated to let JupyterHub recognize future requests as coming from the newly
-    created user.
+    JupyterHub will redirect here if it doesn't recognize a user via a cookie,
+    but users can also visit /hub/tmplogin explicitly to get setup with a new
+    user.
     """
-
-    def initialize(self, process_user):
-        super().initialize()
-        self.process_user = process_user
 
     async def get(self):
         """
-        Authenticate as a new user.
+        Authenticate as a new random user no matter what.
 
-        Each time /tmplogin is hit, we want to create a brand new user. This lets
-        users hit the hub URL, and immediately get a new server - regardless of wether
-        they had already logged in or not. So /tmplogin really acts as a logout +
-        login mechanism. This only happens when /tmplogin is hit - so you can use
-        other parts of the hub as you normally would.
+        This GET request handler mimics parts of what's done by JupyterHub's
+        LoginHandler when a user isn't recognized: to first call
+        BaseHandler.login_user and then redirect the user onwards. The
+        difference is that here users always login as a new user.
+
+        By overwriting any previous user's identifying cookie, it acts as a
+        combination of a logout and login handler.
+
+        JupyterHub's LoginHandler ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/login.py#L129-L138
         """
-        # Create a new user.
+        # Login as a new user, without checking if we were already logged in
         #
-        # user_from_username ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L504-L505
-        #
-        username = str(uuid.uuid4())
-        user = self.user_from_username(username)
-
-        # Let a subclasses of TmpAuthenticator process the new user by
-        # overriding TmpAuthenticator.process_user.
-        #
-        user = self.process_user(user, self)
-        if inspect.isawaitable(user):
-            user = await user
+        user = await self.login_user(None)
 
         # Set or overwrite the login cookie to recognize the new user.
         #
-        # set_login_cookie(user) sets a login cookie for the provided user via
-        # set_hub_cookie(user), but only if it doesn't recognize a user from an
-        # pre-existing login cookie. Due to that, we unconditionally call
-        # self.set_hub_cookie(user) here.
+        # login_user calls set_login_cookie(user), that sets a login cookie for
+        # the user via set_hub_cookie(user), but only if it doesn't recognize a
+        # user from an pre-existing login cookie. Due to that, we
+        # unconditionally call self.set_hub_cookie(user) here.
         #
-        # set_login_cookie ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L627-L628
-        # set_hub_cookie ref:   https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L623-L625
+        # BaseHandler.login_user:                   https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L823-L843
+        # - BaseHandler.authenticate:               https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L643-L644
+        #   - Authenticator.get_authenticated_user: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/auth.py#L472-L534
+        # - BaseHandler.auth_to_user:               https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L774-L821
+        # - BaseHandler.set_login_cookie:           https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L627-L628
+        #   - BaseHandler.set_session_cookie:       https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L601-L613
+        #   - BaseHandler.set_hub_cookie:           https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L623-L625
         #
-        self.set_login_cookie(user)
         self.set_hub_cookie(user)
 
         # Login complete, redirect the user.
         #
-        # get_next_url ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L646-L653
+        # BaseHandler.get_next_url ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/base.py#L646-L653
         #
         next_url = self.get_next_url(user)
         self.redirect(next_url)
@@ -101,37 +95,36 @@ class TmpAuthenticator(Authenticator):
         """,
     ).tag(config=True)
 
-    def process_user(self, user, handler):
+    async def authenticate(self, handler, data):
         """
-        Do additional arbitrary things to the created user before spawn.
-
-        user is a user object, and handler is a TmpAuthenticateHandler object
-
-        Should return the new user object.
-
-        This method can be a coroutine.
-
-        Note: This is primarily for overriding in subclasses
+        Always authenticate a new user by generating a universally unique
+        identifier (uuid).
         """
-        return user
+        username = str(uuid.uuid4())
+        return {
+            "name": username,
+        }
 
     def get_handlers(self, app):
         """
         Registers a dedicated endpoint and web request handler for logging in
-        with tmpauthenticator. This is needed as /hub/login is reserved for
-        redirecting to whats returned by login_url.
+        with TmpAuthenticator. This is needed as /hub/login is reserved for
+        redirecting to what's returned by login_url.
 
         ref: https://github.com/jupyterhub/jupyterhub/pull/1066
         """
-        # FIXME: How to do this better?
-        extra_settings = {'process_user': self.process_user}
-        return [('/tmplogin', TmpAuthenticateHandler, extra_settings)]
+        return [("/tmplogin", TmpAuthenticateHandler)]
 
     def login_url(self, base_url):
         """
-        login_url is overridden as intended for Authenticator subclasses by
-        jupyterhub to redirected users to it when they visit /hub/login.
+        login_url is overridden as intended for Authenticator subclasses that
+        provides a custom login handler (for /hub/tmplogin).
+
+        JupyterHub redirects users to this destination from /hub/login if
+        auto_login is set, or if its not set and users press the "Sign in ..."
+        button.
 
         ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/auth.py#L708-L723
+        ref: https://github.com/jupyterhub/jupyterhub/blob/4.0.0/jupyterhub/handlers/login.py#L118-L147
         """
-        return url_path_join(base_url, 'tmplogin')
+        return url_path_join(base_url, "tmplogin")
