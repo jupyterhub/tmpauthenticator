@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='jupyterhub-tmpauthenticator',
-    version='1.0.0.dev',
+    version='1.0.0',
     description='JupyterHub authenticator that hands out temporary accounts for everyone',
     url='https://github.com/jupyterhub/tmpauthenticator',
     author="Project Jupyter Contributors",  # founded by Yuvi Panda
