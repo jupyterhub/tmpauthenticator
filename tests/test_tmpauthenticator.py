@@ -2,7 +2,7 @@ import pytest
 from yarl import URL
 
 
-async def _get_username(browser_session, app_url):
+async def _get_username(web_client_session, app_url):
     """
     Visits /hub/home to get an _xsrf token set to cookies, that we can then
     pass as a X-XSRFToken header when accessing /hub/api, then the function
@@ -13,10 +13,10 @@ async def _get_username(browser_session, app_url):
     home_url = str(app_url / "hub/home")
     api_user_url = str(app_url / "hub/api/user")
 
-    r = await browser_session.get(home_url)
+    r = await web_client_session.get(home_url)
     assert r.status == 200
 
-    hub_cookies = browser_session.cookie_jar.filter_cookies(home_url)
+    hub_cookies = web_client_session.cookie_jar.filter_cookies(home_url)
     if "_xsrf" in hub_cookies:
         _xsrf = hub_cookies["_xsrf"].value
     else:
@@ -27,7 +27,7 @@ async def _get_username(browser_session, app_url):
         "Accept": "application/json",
     }
 
-    r = await browser_session.get(api_user_url, headers=headers)
+    r = await web_client_session.get(api_user_url, headers=headers)
     assert r.status == 200
     user_api_response = await r.json()
     return user_api_response["name"]
@@ -44,7 +44,7 @@ async def _get_username(browser_session, app_url):
 async def test_auto_login_config(
     hub_app,
     hub_config,
-    browser_session,
+    web_client_session,
     test_config,
     test_status,
     test_location,
@@ -61,7 +61,7 @@ async def test_auto_login_config(
     app_url = URL(f"http://localhost:{app_port}{app.base_url}")
 
     login_url = str(app_url / "hub/login")
-    r = await browser_session.get(login_url, allow_redirects=False)
+    r = await web_client_session.get(login_url, allow_redirects=False)
 
     assert r.status == test_status
     if test_url:
@@ -73,7 +73,7 @@ async def test_auto_login_config(
 async def test_login(
     hub_app,
     hub_config,
-    browser_session,
+    web_client_session,
 ):
     """
     Tests that the user is redirected and finally authorized for /hub/home.
@@ -83,7 +83,7 @@ async def test_login(
     app_url = URL(f"http://localhost:{app_port}{app.base_url}")
 
     home_url = str(app_url / "hub/home")
-    r = await browser_session.get(home_url)
+    r = await web_client_session.get(home_url)
 
     assert r.status == 200
 
@@ -98,7 +98,7 @@ async def test_login(
 async def test_post_auth_hook_config(
     hub_app,
     hub_config,
-    browser_session,
+    web_client_session,
     test_setting_admin_to,
     test_status,
 ):
@@ -120,7 +120,7 @@ async def test_post_auth_hook_config(
     app_url = URL(f"http://localhost:{app_port}{app.base_url}")
 
     admin_url = str(app_url / "hub/admin")
-    r = await browser_session.get(admin_url)
+    r = await web_client_session.get(admin_url)
 
     assert r.status == test_status
 
@@ -128,7 +128,7 @@ async def test_post_auth_hook_config(
 async def test_revisit_tmplogin(
     hub_app,
     hub_config,
-    browser_session,
+    web_client_session,
 ):
     """
     Tests that we get a new user if visiting /hub/tmplogin, even if we already
@@ -143,17 +143,17 @@ async def test_revisit_tmplogin(
     app_url = URL(f"http://localhost:{app_port}{app.base_url}")
 
     # first access, so we receive a new user
-    first_username = await _get_username(browser_session, app_url)
+    first_username = await _get_username(web_client_session, app_url)
     assert first_username
 
     # when we visit /hub/home again, we are recognized and that doesn't make us
     # arrive at /hub/login -> /hub/tmplogin, and therefore we shouldn't get a
     # new user
-    assert first_username == await _get_username(browser_session, app_url)
+    assert first_username == await _get_username(web_client_session, app_url)
 
     # we visit /hub/tmplogin and should get a _new_ user
     tmplogin_url = str(app_url / "hub/tmplogin")
-    r = await browser_session.get(tmplogin_url)
+    r = await web_client_session.get(tmplogin_url)
     assert r.status == 200
-    second_username = await _get_username(browser_session, app_url)
+    second_username = await _get_username(web_client_session, app_url)
     assert first_username != second_username

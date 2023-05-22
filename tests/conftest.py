@@ -30,7 +30,7 @@ async def hub_config():
 
 
 @pytest.fixture
-async def browser_session():
+async def web_client_session():
     """
     Returns a ClientSession object from aiohttp, allowing cookies to be stored
     in between requests etc, allowing us to simulate a browser.
@@ -38,5 +38,5 @@ async def browser_session():
     ref: https://docs.aiohttp.org/en/stable/client_reference.html#client-session
     ref: https://docs.aiohttp.org/en/stable/client_reference.html#response-object
     """
-    async with aiohttp.ClientSession() as browser_session:
-        yield browser_session
+    async with aiohttp.ClientSession() as web_client_session:
+        yield web_client_session
