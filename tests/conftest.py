@@ -38,8 +38,5 @@ async def browser_session():
     ref: https://docs.aiohttp.org/en/stable/client_reference.html#client-session
     ref: https://docs.aiohttp.org/en/stable/client_reference.html#response-object
     """
-    browser_session = aiohttp.ClientSession()
-    try:
+    async with aiohttp.ClientSession() as browser_session:
         yield browser_session
-    finally:
-        await browser_session.close()
