@@ -60,7 +60,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install ${{ matrix.pip-install-spec }}
-          pip install ".[test]"
+          pip install -e ".[test]"
           pip freeze
 
       - name: Run tests
