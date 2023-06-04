@@ -1,5 +1,11 @@
 # Temporary JupyterHub Authenticator
 
+[![Latest PyPI version](https://img.shields.io/pypi/v/jupyterhub-tmpauthenticator?logo=pypi)](https://pypi.python.org/pypi/jupyterhub-tmpauthenticator)
+[![GitHub Workflow Status - Test](https://img.shields.io/github/actions/workflow/status/jupyterhub/tmpauthenticator/test.yaml?logo=github&label=tests)](https://github.com/jupyterhub/tmpauthenticator/actions)
+[![Test coverage of code](https://codecov.io/gh/jupyterhub/tmpauthenticator/branch/main/graph/badge.svg)](https://codecov.io/gh/jupyterhub/tmpauthenticator)
+[![Issue tracking - GitHub](https://img.shields.io/badge/issue_tracking-github-blue?logo=github)](https://github.com/jupyterhub/tmpauthenticator/issues)
+[![Help forum - Discourse](https://img.shields.io/badge/help_forum-discourse-blue?logo=discourse)](https://discourse.jupyter.org/c/jupyterhub)
+
 Simple authenticator for [JupyterHub](http://github.com/jupyter/jupyterhub/)
 that gives anyone who visits the home page a user account without having to
 log in using any UI at all. It also spawns a single-user server and directs
