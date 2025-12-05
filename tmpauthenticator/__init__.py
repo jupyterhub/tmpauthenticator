@@ -81,6 +81,17 @@ class TmpAuthenticator(Authenticator):
         """
         return True
 
+    @default("allow_all")
+    def _allow_all_default(self):
+        """
+        If no allow config is specified, then by default nobody will have access.
+        Prior to JupyterHub 5.0, the opposite was true.
+
+        Setting allow_all to True to preserve expected behavior of allowing
+        everyone to access the hub in a JupyterHub 5.0 setup.
+        """
+        return True
+
     login_service = Unicode(
         "Automatic Temporary Credentials",
         help="""
