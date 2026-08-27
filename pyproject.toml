@@ -1,3 +1,45 @@
+[build-system]
+requires = ["setuptools>=77", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jupyterhub-tmpauthenticator"
+license = "BSD-3-Clause"
+version = "1.0.0"
+dynamic = ["readme"]
+description = "JupyterHub authenticator that hands out temporary accounts for everyone"
+authors = [
+    { name = "Project Jupyter Contributors", email = "jupyter@googlegroups.com" },
+]
+requires-python = ">=3.10"
+dependencies = [
+    "jupyterhub>=4",
+    "traitlets",
+]
+
+[project.urls]
+Source = "https://github.com/jupyterhub/tmpauthenticator"
+
+[project.optional-dependencies]
+test = [
+    "aiohttp",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-jupyterhub",
+]
+
+[project.entry-points."jupyterhub.authenticators"]
+tmp = "tmpauthenticator:TmpAuthenticator"
+
+[tool.setuptools.dynamic]
+readme = { file = "README.md", content-type = "text/markdown" }
+
+[tool.setuptools.packages.find]
+where = [""]
+include = ["tmpauthenticator"]
+
+
 # autoflake is used for autoformatting Python code
 #
 # ref: https://github.com/PyCQA/autoflake#readme
@@ -14,13 +56,6 @@ remove-unused-variables = true
 # ref: https://black.readthedocs.io/en/stable/
 #
 [tool.black]
-target_version = [
-    "py38",
-    "py39",
-    "py310",
-    "py311",
-    "py312",
-]
 
 
 # isort is used for autoformatting Python code
@@ -67,4 +102,4 @@ message_template = "Bump to {new_version}"
 tag_template = "v{new_version}"
 
 [[tool.tbump.file]]
-src = "setup.py"
+src = "pyproject.toml"
